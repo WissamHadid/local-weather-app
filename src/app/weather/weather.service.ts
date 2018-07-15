@@ -6,11 +6,16 @@ import { ICurrentWeather } from '../interfaces'
 import { map } from 'rxjs/operators'
 
 //adee9aa51d834bbea36cea03c0d1255e
+export interface IWeatherService {
+  getCurrentWeather(city: string, country: string): Observable<ICurrentWeather>
+}
 
 @Injectable({
   providedIn: 'root',
 })
-export class WeatherService {
+export class WeatherService implements IWeatherService {
+  private lon: number = 0
+  private lat: number = 0
   constructor(private httpclient: HttpClient) {}
 
   private transformToICurrentWeather(data: ICurrentWeatherData): ICurrentWeather {
@@ -20,27 +25,43 @@ export class WeatherService {
       date: data.dt * 1000,
       image: `http://openweathermap.org/img/w/${data.weather[0].icon}.png`,
       temperature: this.convertKelvinToCelsius(data.main.temp),
-      description: data.weather[0].description
+      description: data.weather[0].description,
     }
   }
-private convertKelvinToFahrenheit(kelvin: number): number {
-    return kelvin * 9 / 5 - 459.67
-}
+  private convertKelvinToFahrenheit(kelvin: number): number {
+    return (kelvin * 9) / 5 - 459.67
+  }
   private convertKelvinToCelsius(kelvin: number) {
-    return kelvin - 273.15  ;
+    return kelvin - 273.15
   }
   public getCurrentWeather(city: string, country: string): Observable<ICurrentWeather> {
     let x = this.httpclient.get<ICurrentWeatherData>(
       `${environment.baseUrl}api.openweathermap.org/data/2.5/weather?` +
         `q=${city},${country}&appid=${environment.appId}`
     )
-    console.log(x.pipe(map((data)=>this.transformToICurrentWeather(data))))
-    return x.pipe(map((data)=>this.transformToICurrentWeather(data)));
+    console.log(x.pipe(map(data => this.transformToICurrentWeather(data))))
+    return x.pipe(map(data => this.transformToICurrentWeather(data)))
+  }
+
+  public getCurrentWeatherAutomatic(
+    city: string,
+    country: string
+  ): Observable<ICurrentWeather> {
+    navigator.geolocation.getCurrentPosition(positoin => {
+      this.lon = positoin.coords.longitude
+      this.lat = positoin.coords.latitude
+      console.log(this.lon, this.lat)
+    })
+    let x = this.httpclient.get<ICurrentWeatherData>(
+      `${environment.baseUrl}api.openweathermap.org/data/2.5/weather?` +
+        `lat=${this.lat}&lon=${this.lon}&appid=${environment.appId}`
+    )
+    console.log(x.pipe(map(data => this.transformToICurrentWeather(data))))
+    return x.pipe(map(data => this.transformToICurrentWeather(data)))
   }
 }
 
-
-}
+//api.openweathermap.org/data/2.5/weather?lat=35&lon=139
 
 interface ICurrentWeatherData {
   coord: Coord
