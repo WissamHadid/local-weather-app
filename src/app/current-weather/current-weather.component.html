@@ -1,3 +1,19 @@
-<p>
-  current-weather works!
-</p>
+<div>
+  <span>{{current.city}}, {{current.country}}</span>
+  <span> {{current.date | date:'fullDate'}}</span>
+  <p></p>
+</div>
+
+<div>
+
+  <img [src]='current.image' width="30"  >
+  <span>{{current.temperature | number:'1.0-0'}}°C</span>
+</div>
+<div>
+  {{current.description}}
+</div>
+<button type="button" class="btn btn-info">test</button>
+<button type="button" class="btn btn-primary">
+  Notifications
+  <span class="badge badge-light">4</span>
+</button>
