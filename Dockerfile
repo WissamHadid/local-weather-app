@@ -1,3 +1,6 @@
-FROM duluca/minimal-node-web-server:8.11.1
-WORKDIR ./src/app
-COPY dist public
+FROM nginx:alpine
+
+COPY nginx.conf /etc/nginx/nginx.conf
+
+WORKDIR /usr/share/nginx/html
+COPY dist/ .
